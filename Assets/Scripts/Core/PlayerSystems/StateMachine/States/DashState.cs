@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Balance.Data;
+using Entities;
 using JetBrains.Annotations;
 using Mirror;
 using UnityEngine;
@@ -12,6 +14,7 @@ namespace Core.PlayerSystems.StateMachine.States
         private readonly PlayerMovementData _playerMovementData;
         private float _distance;
         private Vector3 _previousPosition;
+        private List<UnitId> _hittedIds = new List<UnitId>();
 
         public event Action Complited; 
 
@@ -46,10 +49,18 @@ namespace Core.PlayerSystems.StateMachine.States
         {
             if (obj.IsInvulnerable == false)
             {
-                if (_playerModel.IsInvulnerable || String.IsNullOrEmpty(_playerModel.Id.Value))
+                if (_playerModel.IsInvulnerable)
                 {
                     return;
                 }
+
+                UnitId id = _playerModel.Id;
+                if (String.IsNullOrEmpty(id.Value) || _hittedIds.Contains(id))
+                {
+                    return;
+                }
+
+                _hittedIds.Add(id);
                 obj.Hit();
                 _playerModel.AddScore();
             }
@@ -58,6 +69,7 @@ namespace Core.PlayerSystems.StateMachine.States
         public override void Dispose()
         {
             base.Dispose();
+            _hittedIds.Clear();
             _playerModel.FindedTarget -= OnHit;
         }
     }

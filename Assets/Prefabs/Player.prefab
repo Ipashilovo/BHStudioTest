@@ -301,7 +301,7 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.5
-  m_SlopeLimit: 45
+  m_SlopeLimit: 180
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
@@ -321,6 +321,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   _camera: {fileID: 963194227}
+  _spawnPositionFolder: {fileID: 0}
   _characterController: {fileID: 8490226252579644310}
   _factory: {fileID: 11400000, guid: d7ac226aaadf64a46a06cebb7c094ccc, type: 2}
   _playerInvulnerableHandler: {fileID: 1987074131832901054}
