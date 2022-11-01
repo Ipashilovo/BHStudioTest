@@ -1,0 +1,16 @@
+{
+    "name": "BalanceData",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0100bd519d344f64ca0aa8db9313061c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
