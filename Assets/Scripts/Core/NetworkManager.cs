@@ -18,6 +18,7 @@ namespace Core
 
         
         public event Action<UnitId> AddedNewPlayer;
+        public event Action<UnitId> RemovedPlayer;
         public event Action<UnitId> ScoreAdded;
 
         public override void OnStartServer()
@@ -27,6 +28,7 @@ namespace Core
             NetworkServer.RegisterHandler<UnitIdMassage>(OnSetId);
             NetworkServer.RegisterHandler<ScoreAddMassage>(OnScoreAdd);
             NetworkServer.RegisterHandler<RespaunMassage>(Respaun);
+            NetworkServer.RegisterHandler<RemovePlayerMassage>((args1, massage) => {RemovedPlayer?.Invoke(massage.UnitId);});
         }
 
         private void Respaun(NetworkConnectionToClient arg1, RespaunMassage arg2)
@@ -84,5 +86,6 @@ namespace Core
     {
         public event Action<UnitId> AddedNewPlayer;
         public event Action<UnitId> ScoreAdded;
+        public event Action<UnitId> RemovedPlayer;
     }
 }

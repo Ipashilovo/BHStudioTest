@@ -64,6 +64,21 @@ namespace Core.PlayerSystems
                 NetworkClient.RegisterHandler<RespaunPositionMassage>(Respaun);
             }
         }
+        
+
+        public override void OnStopClient()
+        {
+            if (String.IsNullOrEmpty(Id.Value))
+            {
+                return;
+            }
+
+            NetworkClient.Send(new RemovePlayerMassage()
+            {
+                UnitId = Id
+            });
+            base.OnStopClient();
+        }
 
         private void Respaun(RespaunPositionMassage obj)
         {
@@ -109,7 +124,6 @@ namespace Core.PlayerSystems
 
         public void AddScore()
         {
-            Debug.Log("AddScoreOnPlayer");
             NetworkClient.Send(new ScoreAddMassage()
             {
                 Id = Id

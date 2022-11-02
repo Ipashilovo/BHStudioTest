@@ -11,6 +11,7 @@ namespace UI
         public void Init(string id)
         {
             _id.text = id;
+            gameObject.SetActive(true);
         }
 
         public void Bind(int value)

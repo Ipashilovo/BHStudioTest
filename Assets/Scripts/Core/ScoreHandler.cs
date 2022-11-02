@@ -38,16 +38,34 @@ namespace Core
         public void Init(IPlayerHandler playerHandler)
         {
             _playerHandler = playerHandler;
-            playerHandler.AddedNewPlayer += OnScoreChanged;
-            playerHandler.ScoreAdded += OnScireAdd;
+            playerHandler.AddedNewPlayer += OnAddId;
+            playerHandler.ScoreAdded += OnScoreAdd;
+            playerHandler.RemovedPlayer += OnRemoveId;
         }
-
-        private void OnScireAdd(UnitId obj)
+        
+        public IReadOnlyDictionary<string, int> GetScore()
         {
-            CommandAddScore(obj.Value);
+            return _score;
         }
 
-        private void OnScoreChanged(UnitId obj)
+
+        private void OnRemoveId(UnitId obj)
+        {
+            if (_score.TryGetValue(obj.Value, out var value))
+            {
+                RemoveId(obj.Value);
+            }
+        }
+
+        [Command(requiresAuthority = false)]
+        private void RemoveId(string objValue) => RemoveToServer(objValue);
+
+        [Server]
+        private void RemoveToServer(string objValue) => _syncScores.Remove(objValue);
+
+        private void OnScoreAdd(UnitId obj) => CommandAddScore(obj.Value);
+
+        private void OnAddId(UnitId obj)
         {
             if (_score.TryGetValue(obj.Value, out var value))
             {
@@ -60,7 +78,7 @@ namespace Core
         {
             if (_playerHandler != null)
             {
-                _playerHandler.AddedNewPlayer -= OnScoreChanged;
+                _playerHandler.AddedNewPlayer -= OnAddId;
             }
         }
 
@@ -77,6 +95,8 @@ namespace Core
                     ScoreChanged?.Invoke(key, item);
                     break;
                 case SyncIDictionary<string, int>.Operation.OP_REMOVE:
+                    _score.Remove(key);
+                    RemovedClient?.Invoke(key);
                     break;
                 case SyncIDictionary<string, int>.Operation.OP_CLEAR:
                     _score.Clear();
@@ -86,22 +106,13 @@ namespace Core
 
 
         [Command(requiresAuthority = false)]
-        private void AddId(string id)
-        {
-            AddIdToServer(id);
-        }
+        private void AddId(string id) => AddIdToServer(id);
 
         [Server]
-        private void AddIdToServer(string id)
-        {
-            _syncScores.Add(id, 0);
-        }
-        
+        private void AddIdToServer(string id) => _syncScores.Add(id, 0);
+
         [Command(requiresAuthority = false)]
-        private void CommandAddScore(string unitId)
-        {
-            AddScore(unitId);
-        }
+        private void CommandAddScore(string unitId) => AddScore(unitId);
 
         [Server]
         private void AddScore(string id)
@@ -145,34 +156,21 @@ namespace Core
         }
 
         [Server]
-        private void DropKey(string key)
-        {
-            _syncScores[key] = 0;
-        }
+        private void DropKey(string key) => _syncScores[key] = 0;
 
         [Command(requiresAuthority = false)]
-        private void SetEndState(bool ended)
-        {
-            SyncEndState(ended);
-        }
+        private void SyncWinnerCommand(string id) => SyncWinner(id);
+
+        [Server]
+        private void SyncWinner(string id) => _SyncWinner = id;
+
+        [Server]
+        private void SyncEndState(bool state) => _SyncEndState = state;
 
         [Command(requiresAuthority = false)]
-        private void SyncWinnerCommand(string id)
-        {
-            SyncWinner(id);
-        }
+        private void SetEndState(bool ended) => SyncEndState(ended);
 
-        [Server]
-        private void SyncWinner(string id)
-        {
-            _SyncWinner = id;
-        }
-
-        [Server]
-        private void SyncEndState(bool state)
-        {
-            _SyncEndState = state;
-        }
+        private void SyncEndState(bool oldValue, bool newValue) => IsEnded = newValue;
 
         private void SyncWinner(string oldValue, string newValue)
         {
@@ -182,16 +180,6 @@ namespace Core
                 FindedWinner?.Invoke(_winnerId);
                 return;
             }
-        }
-
-        private void SyncEndState(bool oldValue, bool newValue)
-        {
-            IsEnded = newValue;
-        }
-
-        public IReadOnlyDictionary<string, int> GetScore()
-        {
-            return _score;
         }
     }
 }
